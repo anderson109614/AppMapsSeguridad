@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS Usuarios(usuario_id TEXT );

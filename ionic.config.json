@@ -1,5 +1,7 @@
 {
   "name": "AppMapsSeguridad",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }
