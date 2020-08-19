@@ -10,7 +10,7 @@ export class SocketService {
     this.socket=io(this.url);
    }
   socket:any;
-  readonly url:string="http://localhost:3000/";
+  readonly url:string="http://157.245.248.79:3000/";
   listen(eventName:string){
     return new Observable((Subscriber)=>{
       this.socket.on(eventName,(data)=>{

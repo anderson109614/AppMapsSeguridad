@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class APIService {
- url:string='http://localhost:3000/';
+ url:string='http://157.245.248.79:3000/';
   constructor(private http:HttpClient) { }
   getTiempo(){
     return this.http.get(this.url + 'Rutas/Rutas.php')

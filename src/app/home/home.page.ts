@@ -20,13 +20,17 @@ export class HomePage implements OnInit {
   Longitud: string = '-78.98989';
   isConnected = false;
   isConnected2 = true;
+  exactitud='';
   Estado: string = 'Transmitiendo';
+  enviados: number = 0;
+
   // private database: BaseLocalService,
 
   //   private apiser: APIService,
   //  private sock: SocketService,
   constructor(private networkService: EstadoConeccionService,
     private apiser: APIService,
+    private database: BaseLocalService,
     private sock: SocketService,
     private geolocation: Geolocation,
     private device: Device,
@@ -41,7 +45,7 @@ export class HomePage implements OnInit {
   }
 
   IniciarAplicacion() {
-    /*
+
     this.database.getDatabaseState().subscribe(rdy => {
       if (rdy) {
         this.database.getUsuario().then((data) => {
@@ -52,20 +56,22 @@ export class HomePage implements OnInit {
             this.cargarInformacionDispositivo();
 
           } else {
-            this.MostrarRegistro(false);
             this.idUsuario = data[0].usuario_id;
+            this.cargarInformacionDispositivo();
+            this.MostrarRegistro(false);
+
           }
 
         }, (error) => {
+          this.cargarInformacionDispositivo();
           this.MostrarRegistro(true);
         });
 
       }
     });
-    */
-    this.MostrarRegistro(false);
-    this.cargarPosicio();
-    //  this.cargarInformacionDispositivo();
+
+    //this.MostrarRegistro(true);
+
   }
   cargarInformacionDispositivo() {
     this.uuid = this.device.uuid;
@@ -81,14 +87,42 @@ export class HomePage implements OnInit {
 
     });
 */
-let watch = this.geolocation.watchPosition();
-watch.subscribe((data) => {
- // data can be a set of coordinates, or an error (if an error occurred).
- // data.coords.latitude
- // data.coords.longitude
- this.Latitud = data.coords.latitude.toString();
+    let watch = this.geolocation.watchPosition();
+    watch.subscribe((data) => {
+      // data can be a set of coordinates, or an error (if an error occurred).
+      // data.coords.latitude
+      // data.coords.longitude
+      this.Latitud = data.coords.latitude.toString();
       this.Longitud = data.coords.longitude.toString();
-});
+      this.exactitud=data.coords.accuracy.toString();
+      this.enviarUbicacion();
+    });
+  }
+
+  enviarUbicacion() {
+    /*
+    this.sock.listen('welcome').subscribe((data)=>{
+      console.log('coneccion',data);
+    });
+    */
+    let g = false;
+    if (this.enviados == 5) {
+      g = true;
+      this.enviados = 0;
+    }
+    let data = {
+      Id: this.idUsuario,
+      UUID: this.uuid,
+      manufacture: this.manofactura,
+      model: this.modelo,
+      Lat: this.Latitud,
+      lon: this.Longitud,
+      exa:this.exactitud,
+      guardar: g
+    };
+    this.sock.emit('transmicion:Ubicacion', data);
+    console.log('ubicacion enviada', data);
+    this.enviados++;
   }
 
   MostrarRegistro(estado: boolean) {
@@ -100,6 +134,7 @@ watch.subscribe((data) => {
     } else {
       (<HTMLDivElement>document.getElementById('divRegistro')).style.display = 'none';
       (<HTMLDivElement>document.getElementById('divEnvioInformacion')).style.display = 'block';
+      this.cargarPosicio();
 
     }
 
@@ -124,7 +159,7 @@ watch.subscribe((data) => {
       });
   }
   guardarIdBaseLocal() {
-    // this.database.getUsuario()
+    this.database.GuardarUsuario(this.idUsuario);
   }
   async presentToast(msj: string) {
     const toast = await this.toastController.create({
